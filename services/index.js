@@ -1,9 +1,10 @@
 import express from 'express';
 import mongoose from 'mongoose'
-
+import cors from 'cors';
 const app = express()
 const port = 3000
 app.use(express.json());
+app.use(cors());
 
 //conexão com o banco de dados
 const MONGO_URI = "mongodb+srv://didigos:KZDOugsZHoDWk4Fy@development.hinzp0h.mongodb.net/acbrcatalogo?retryWrites=true&w=majority&appName=Development"
