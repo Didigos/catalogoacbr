@@ -1,6 +1,7 @@
 import express from 'express';
 import mongoose from 'mongoose'
 import cors from 'cors';
+import { v4 as uuidv4 } from 'uuid';
 const app = express()
 const port = 3000
 app.use(express.json());
@@ -14,6 +15,11 @@ mongoose.connect(MONGO_URI)
 
 //schemas 
 const ProdutoSchema = new mongoose.Schema({
+  id: {
+    type: String,
+    required: true,
+    unique: true,
+  },
   nome: {
     type: String,
     required: true,
@@ -25,6 +31,10 @@ const ProdutoSchema = new mongoose.Schema({
     trim: true,
   },
   precobase: {
+    type: Number,
+    min: 0,
+  },
+  precopix: {
     type: Number,
     min: 0,
   },
@@ -60,6 +70,10 @@ const Produto = mongoose.model('Produto', ProdutoSchema);
 
 const AdminSchema = new mongoose.Schema(
   {
+    id: {
+      type: String,
+      required: true,
+    },
     nome: {
       type: String,
       required: true,
@@ -127,17 +141,53 @@ app.get("/users", (req,res)=>{
     .catch((error) => res.status(500).send("Erro ao buscar usuários: " + error.message))
 })
 
+app.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+  const usuario = await Users.findOne({ email });
+
+  if (!usuario) {
+    return res.status(401).json({ erro: 'Usuário não encontrado' });
+  }
+
+  // Se usar bcrypt:
+  // const senhaValida = await bcrypt.compare(senha, usuario.senha);
+  // if (!senhaValida) { ... }
+
+  // Se for senha em texto (não recomendado):
+  if (usuario.password !== password) {
+    return res.status(401).json({ erro: 'Senha incorreta' });
+  }
+
+  res.json({ 
+    mensagem: 'Login realizado com sucesso',
+    dados: { id: usuario.id, nome: usuario.nome, email: usuario.email }
+  });
+});
+
 app.post("/users", (req,res)=>{
-    const novoUser = new Users(req.body)
+    const novoUser = new Users({
+        ...req.body,
+        id: uuidv4()
+    })
     novoUser.save()
     .then(() => res.status(201).send("Usuário registrado com sucesso"))
     .catch((error) => res.status(400).send("Erro ao registrar usuário: " + error.message))
 })
 
+app.get('/usuario/:id', async (req, res) => {
+  const usuario = await Users.findById(req.params.id);
+  if (!usuario) {
+    return res.status(404).json({ erro: 'Usuário não encontrado' });
+  }
+  res.json({ email: usuario.email, nome: usuario.nome });
+});
 
 // registrar novo produto
 app.post("/smartphones", (req,res)=>{
-    const novoProduto = new Produto(req.body)
+    const novoProduto = new Produto({
+        ...req.body,
+        id: uuidv4()
+    })
     novoProduto.save()
     .then(() => res.status(201).send("Produto registrado com sucesso"))
     .catch((error) => res.status(400).send("Erro ao registrar produto: " + error.message))
