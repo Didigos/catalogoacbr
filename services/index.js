@@ -203,7 +203,7 @@ app.get("/smartphones", (req,res)=>{
 // buscar produto por id
 app.get("/smartphones/:id", (req,res)=>{
     const produtoId = req.params.id
-    Produto.findById(produtoId)
+    Produto.findOne({ id: produtoId })
     .then((produto) => {
         if (!produto) {
             return res.status(404).send("Produto não encontrado")
