@@ -7,9 +7,7 @@ const port = 3000
 
 //middleware
 app.use(express.json());
-app.use(cors({
-  origin: 'https://acbrcelulares.vercel.app' // ou use origin: '*' para liberar geral (não recomendado para produção)
-}));
+app.use(cors());
 
 //conexão com o banco de dados
 const MONGO_URI = "mongodb+srv://didigos:KZDOugsZHoDWk4Fy@development.hinzp0h.mongodb.net/acbrcatalogo?retryWrites=true&w=majority&appName=Development"
