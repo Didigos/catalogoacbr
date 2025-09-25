@@ -3,12 +3,12 @@ import mongoose from 'mongoose'
 import cors from 'cors';
 import { v4 as uuidv4 } from 'uuid';
 const app = express()
-const port = 3000
+const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cors());
 
 //conexão com o banco de dados
-const MONGO_URI = "mongodb+srv://didigos:KZDOugsZHoDWk4Fy@development.hinzp0h.mongodb.net/acbrcatalogo?retryWrites=true&w=majority&appName=Development"
+const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://didigos:KZDOugsZHoDWk4Fy@development.hinzp0h.mongodb.net/acbrcatalogo?retryWrites=true&w=majority&appName=Development"
 mongoose.connect(MONGO_URI)
   .then(() => console.log("Conectado ao MongoDB"))
   .catch((error) => console.error("Erro ao conectar ao MongoDB:", error));
