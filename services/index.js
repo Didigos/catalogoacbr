@@ -4,8 +4,12 @@ import cors from 'cors';
 import { v4 as uuidv4 } from 'uuid';
 const app = express()
 const port = 3000
+
+//middleware
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: 'https://acbrcelulares.vercel.app' // ou use origin: '*' para liberar geral (não recomendado para produção)
+}));
 
 //conexão com o banco de dados
 const MONGO_URI = "mongodb+srv://didigos:KZDOugsZHoDWk4Fy@development.hinzp0h.mongodb.net/acbrcatalogo?retryWrites=true&w=majority&appName=Development"
