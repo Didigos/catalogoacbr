@@ -232,7 +232,7 @@ app.put("/smartphones/:id", (req, res) => {
 //deletar produto por id
 app.delete("/smartphones/:id", (req, res) => {
   const produtoId = req.params.id
-  Produto.findByIdAndDelete(produtoId)
+  Produto.findOneAndDelete({ id: produtoId })
     .then((produtoDeletado) => {
       if (!produtoDeletado) {
         return res.status(404).send("Produto não encontrado")
@@ -241,7 +241,6 @@ app.delete("/smartphones/:id", (req, res) => {
     })
     .catch((error) => res.status(500).send("Erro ao deletar produto: " + error.message))
 })
-
 //ROTAS PARA FORMAS DE PAGAMENTO
 
 app.post("/taxas", (req, res) => {
