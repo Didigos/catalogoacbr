@@ -30,14 +30,6 @@ const ProdutoSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
-  precobase: {
-    type: Number,
-    min: 0,
-  },
-  precopix: {
-    type: Number,
-    min: 0,
-  },
   pagamento: {
     avista: {
       type: Boolean,
@@ -59,6 +51,25 @@ const ProdutoSchema = new mongoose.Schema({
     armazenamento: { type: String, default: 'N/A' },
     memoria: { type: String, default: 'N/A' },
   },
+  preco: {
+    avista: { type: Number, required: true, default: 0 },
+    debito: { type: Number, required: true, default: 0 },
+    credito: {
+      "parcela1": { type: Number, default: 0 },
+      "parcela2": { type: Number, default: 0 },
+      "parcela3": { type: Number, default: 0 },
+      "parcela4": { type: Number, default: 0 },
+      "parcela5": { type: Number, default: 0 },
+      "parcela6": { type: Number, default: 0 },
+      "parcela7": { type: Number, default: 0 },
+      "parcela8": { type: Number, default: 0 },
+      "parcela9": { type: Number, default: 0 },
+      "parcela10": { type: Number, default: 0 },
+      "parcela11": { type: Number, default: 0 },
+      "parcela12": { type: Number, default: 0 },
+    }
+  },
+
   imagens: [
     {
       type: String, // normalmente URL da imagem
@@ -100,30 +111,30 @@ const Users = mongoose.model('User', AdminSchema);
 
 const TaxaSchema = new mongoose.Schema(
   {
-    avista: {
+    debito: {
       type: Number, // Exemplo: 2.5 (%)
       required: true,
       default: 0,
     },
-    debito: {
+    pix: {
       type: Number, // Exemplo: 1.8 (%)
       required: true,
       default: 0,
     },
     credito: {
       // objeto com taxas de 1x a 12x
-      "1x": { type: Number, default: 0 },
-      "2x": { type: Number, default: 0 },
-      "3x": { type: Number, default: 0 },
-      "4x": { type: Number, default: 0 },
-      "5x": { type: Number, default: 0 },
-      "6x": { type: Number, default: 0 },
-      "7x": { type: Number, default: 0 },
-      "8x": { type: Number, default: 0 },
-      "9x": { type: Number, default: 0 },
-      "10x": { type: Number, default: 0 },
-      "11x": { type: Number, default: 0 },
-      "12x": { type: Number, default: 0 },
+      "parcela1": { type: Number, default: 0 },
+      "parcela2": { type: Number, default: 0 },
+      "parcela3": { type: Number, default: 0 },
+      "parcela4": { type: Number, default: 0 },
+      "parcela5": { type: Number, default: 0 },
+      "parcela6": { type: Number, default: 0 },
+      "parcela7": { type: Number, default: 0 },
+      "parcela8": { type: Number, default: 0 },
+      "parcela9": { type: Number, default: 0 },
+      "parcela10": { type: Number, default: 0 },
+      "parcela11": { type: Number, default: 0 },
+      "parcela12": { type: Number, default: 0 },
     },
   },
   {
