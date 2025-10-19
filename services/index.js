@@ -14,6 +14,115 @@ mongoose.connect(MONGO_URI)
   .catch((error) => console.error("Erro ao conectar ao MongoDB:", error));
 
 //schemas 
+
+const clientes = new mongoose.Schema({
+  id: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  nome: {
+    type: String,
+    required: true,
+  },
+  celular: {
+    type: String,
+    required: true,
+  },
+  orders: { // numero de identificação das ordens feitas, ex: [123, 456, 789]
+    type: Array,
+    default: [],
+  }
+});
+const Clientes = mongoose.model('Clientes', clientes);
+
+// const ordensDeServico = new mongoose.Schema({
+//   id: {
+//     type: String,
+//     required: true,
+//     unique: true,
+//   },
+//   clienteId: {
+//     type: String,
+//     required: true,
+//   },
+//   funcionario: {,
+//     type: String,
+//     required: true,
+//   },
+//   status: {
+//     type: String,
+//     enum: ['aberto', 'em andamento', 'concluído', 'entregue'],
+//   },
+//   loja: {
+//     type: String,
+//     enum: ['Amanda', 'Rodrigo', 'Carmem', 'Esrom', 'Bradesco'], // exemplo de lojas
+//     required: true, 
+//   },
+//   dataEntrada: {
+//     type: Date,
+//     default: Date.now,
+//   },
+//   dataSaida: {
+//     type: Date,
+//   },
+//   equipamento: [
+//     informacoes = [{
+//       marca: { type: String, required: true },
+//       modelo: { type: String, required: true },
+//       imei: { type: String, default: 'N/A' },
+//     }],
+//     checklistSaida = [
+//       {
+//         telaDisplay: { type: Boolean, default: false },
+//         touch: { type: Boolean, default: false },
+//         bateria: { type: Boolean, default: false },
+//         cameraTraseira: { type: Boolean, default: false },
+//         cameraFrontal: { type: Boolean, default: false },
+//         conectorCarga: { type: Boolean, default: false },
+//         altoFalante: { type: Boolean, default: false },
+//         microfone: { type: Boolean, default: false },
+//         botoesVolume: { type: Boolean, default: false },
+//         botaoPower: { type: Boolean, default: false },
+//         leitorDigital: { type: Boolean, default: false },
+//         faceId: { type: Boolean, default: false },
+//         wifi: { type: Boolean, default: false },
+//         bluetooth: { type: Boolean, default: false },
+//         conectorFone: { type: Boolean, default: false },
+//       }
+//     ],
+//     checklistEntrada = [{
+//       ligaNaoLiga: { type: Boolean, default: false },
+//       telaDisplay: { type: Boolean, default: false },
+//       touch: { type: Boolean, default: false },
+//       bateria: { type: Boolean, default: false },
+//       conectorCarga: { type: Boolean, default: false },
+//     }]
+//   ]
+// }, { timestamps: true });
+
+const adaptacaoPeliculasSchema = new mongoose.Schema({
+  id: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  modelo: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  adaptacoes: [
+    {
+      type: String,
+      required: true,
+      trim: true,
+    },
+  ],
+});
+
+const AdaptacaoPeliculas = mongoose.model('AdaptacaoPeliculas', adaptacaoPeliculasSchema);
+
 const ProdutoSchema = new mongoose.Schema({
   id: {
     type: String,
@@ -145,6 +254,53 @@ const TaxaSchema = new mongoose.Schema(
 const Taxa = mongoose.model("Taxa", TaxaSchema);
 
 // ROTAS PARA USERS
+
+// modulo de peliculas
+app.post("/adaptacoes", (req, res) => {
+  const novaAdaptacao = new AdaptacaoPeliculas({
+    ...req.body,
+  });
+  novaAdaptacao.save()
+    .then(() => res.status(201).send("Adaptação registrada com sucesso"))
+    .catch((error) => res.status(400).send("Erro ao registrar adaptação: " + error.message))
+});
+
+app.get("/adaptacoes", (req, res) => {
+  AdaptacaoPeliculas.find()
+    .then((adaptacoes) => res.status(200).json(adaptacoes))
+    .catch((error) => res.status(500).send("Erro ao buscar adaptações: " + error.message))
+})
+
+app.get("/adaptacoes/:modelo", (req, res) => {
+  const modelo = req.params.modelo;
+
+  AdaptacaoPeliculas.find({ modelo })
+    .then((adaptacoes) => res.status(200).json(adaptacoes))
+    .catch((error) => res.status(500).send("Erro ao buscar adaptações: " + error.message))
+});
+
+app.delete("/adaptacoes/:id", (req, res) => {
+  const adaptacaoId = req.params.id;
+
+  AdaptacaoPeliculas.findByIdAndDelete(adaptacaoId)
+    .then(() => res.status(204).send())
+    .catch((error) => res.status(500).send("Erro ao deletar adaptação: " + error.message))
+});
+
+app.put("/adaptacoes/:id", (req, res) => {
+  const adaptacaoId = req.params.id;
+
+  AdaptacaoPeliculas.findByIdAndUpdate(adaptacaoId, req.body, { new: true })
+    .then((adaptacaoAtualizada) => {
+      if (!adaptacaoAtualizada) {
+        return res.status(404).send("Adaptação não encontrada")
+      }
+      res.status(200).json(adaptacaoAtualizada)
+    })
+    .catch((error) => res.status(500).send("Erro ao atualizar adaptação: " + error.message))
+});
+
+// listar usuarios
 
 app.get("/users", (req, res) => {
   Users.find()
