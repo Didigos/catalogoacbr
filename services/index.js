@@ -101,10 +101,18 @@ const Clientes = mongoose.model('Clientes', clientes);
 //   ]
 // }, { timestamps: true });
 
+const adaptacaoItemSchema = new mongoose.Schema(
+  {
+    id: { type: String, default: () => uuidv4() }, // UUID único por item
+    nome: { type: String, required: true, trim: true }, // ajuste o nome do campo conforme sua necessidade
+  },
+  { _id: false } // evita criar um _id ObjectId automático para cada item
+);
+
 const adaptacaoPeliculasSchema = new mongoose.Schema({
   id: {
     type: String,
-    required: true,
+    default: () => uuidv4(), // gerar a cada documento
     unique: true,
   },
   modelo: {
@@ -112,13 +120,10 @@ const adaptacaoPeliculasSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
-  adaptacoes: [
-    {
-      type: String,
-      required: true,
-      trim: true,
-    },
-  ],
+  adaptacoes: {
+    type: [adaptacaoItemSchema],
+    default: [],
+  },
 });
 
 const AdaptacaoPeliculas = mongoose.model('AdaptacaoPeliculas', adaptacaoPeliculasSchema);
