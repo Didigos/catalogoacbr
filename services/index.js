@@ -261,30 +261,21 @@ const Taxa = mongoose.model("Taxa", TaxaSchema);
 // ROTAS PARA USERS
 
 // modulo de peliculas
-
-
-app.post("/adaptacoes", async (req, res) => {
-  try {
-    // aceita tanto "nome" quanto "modelo" do frontend
-    const modelo = (req.body?.modelo ?? req.body?.nome ?? "").trim();
-    if (!modelo) {
-      return res.status(400).json({ erro: "Campo 'nome' é obrigatório." });
-    }
-
-    // opcional: evitar modelos duplicados
-    const jaExiste = await AdaptacaoPeliculas.findOne({ modelo });
-    if (jaExiste) {
-      return res.status(409).json({ erro: "Modelo já existe" });
-    }
-
-    // id e adaptacoes são definidos pelo schema (default uuid e [])
-    const novoModelo = await AdaptacaoPeliculas.create({ modelo });
-
-    return res.status(201).json(novoModelo);
-  } catch (error) {
-    return res.status(500).send("Erro ao criar modelo de película: " + error.message);
-  }
+app.post("/adaptacoes", (req, res) => {
+  const novaAdaptacao = new AdaptacaoPeliculas({
+    ...req.body,
+  });
+  novaAdaptacao.save()
+    .then(() => res.status(201).send("Adaptação registrada com sucesso"))
+    .catch((error) => res.status(400).send("Erro ao registrar adaptação: " + error.message))
 });
+
+app.get("/adaptacoes", (req, res) => {
+  AdaptacaoPeliculas.find()
+    .then((adaptacoes) => res.status(200).json(adaptacoes))
+    .catch((error) => res.status(500).send("Erro ao buscar adaptações: " + error.message))
+})
+
 app.get("/adaptacoes/:modelo", (req, res) => {
   const modelo = req.params.modelo;
 
