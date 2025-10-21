@@ -262,39 +262,29 @@ const Taxa = mongoose.model("Taxa", TaxaSchema);
 
 // modulo de peliculas
 
-app.post("/adaptacoes/:modeloId", async (req, res) => {
-  try {
-    const { modeloId } = req.params; // UUID do documento pai (idPelicula no frontend)
-    const { nome } = req.body;
 
-    if (typeof nome !== "string" || !nome.trim()) {
+app.post("/adaptacoes", async (req, res) => {
+  try {
+    // aceita tanto "nome" quanto "modelo" do frontend
+    const modelo = (req.body?.modelo ?? req.body?.nome ?? "").trim();
+    if (!modelo) {
       return res.status(400).json({ erro: "Campo 'nome' é obrigatório." });
     }
 
-    const novoItem = { id: uuidv4(), nome: nome.trim() };
-
-    const doc = await AdaptacaoPeliculas.findOneAndUpdate(
-      { id: modeloId },                     // campo 'id' do documento pai (UUID)
-      { $push: { adaptacoes: novoItem } },  // adiciona no array
-      { new: true, runValidators: true }
-    );
-
-    if (!doc) {
-      return res.status(404).json({ erro: "Modelo não encontrado" });
+    // opcional: evitar modelos duplicados
+    const jaExiste = await AdaptacaoPeliculas.findOne({ modelo });
+    if (jaExiste) {
+      return res.status(409).json({ erro: "Modelo já existe" });
     }
 
-    return res.status(201).json(novoItem); // retorna somente o item
+    // id e adaptacoes são definidos pelo schema (default uuid e [])
+    const novoModelo = await AdaptacaoPeliculas.create({ modelo });
+
+    return res.status(201).json(novoModelo);
   } catch (error) {
-    return res.status(500).send("Erro ao adicionar adaptação: " + error.message);
+    return res.status(500).send("Erro ao criar modelo de película: " + error.message);
   }
 });
-
-app.get("/adaptacoes", (req, res) => {
-  AdaptacaoPeliculas.find()
-    .then((adaptacoes) => res.status(200).json(adaptacoes))
-    .catch((error) => res.status(500).send("Erro ao buscar adaptações: " + error.message))
-})
-
 app.get("/adaptacoes/:modelo", (req, res) => {
   const modelo = req.params.modelo;
 
