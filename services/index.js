@@ -284,16 +284,21 @@ app.get("/adaptacoes/:modelo", (req, res) => {
     .catch((error) => res.status(500).send("Erro ao buscar adaptações: " + error.message))
 });
 
-app.delete("/adaptacoes/:id", (req, res) => {
-  const adaptacaoId = req.params.id;
-
-  AdaptacaoPeliculas.findByIdAndDelete(adaptacaoId)
-    .then(() => res.status(204).send())
-    .catch((error) => res.status(500).send("Erro ao deletar adaptação: " + error.message))
+app.delete("/adaptacoes/:id", async (req, res) => {
+  try {
+    const { id } = req.params; // UUID do documento (campo 'id')
+    const apagado = await AdaptacaoPeliculas.findOneAndDelete({ id });
+    if (!apagado) {
+      return res.status(404).send("Modelo não encontrado");
+    }
+    return res.status(204).send(); // sem conteúdo
+  } catch (error) {
+    return res.status(500).send("Erro ao deletar adaptação: " + error.message);
+  }
 });
 
 // CRUD PARA AS ADAPTAÇÕES DE PELICULAS
-
+ 
 app.delete("/adaptacoes/:ModeloMae/itens/:itemId", async (req, res) => {
     
   try {
