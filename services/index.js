@@ -261,13 +261,32 @@ const Taxa = mongoose.model("Taxa", TaxaSchema);
 // ROTAS PARA USERS
 
 // modulo de peliculas
-app.post("/adaptacoes", (req, res) => {
-  const novaAdaptacao = new AdaptacaoPeliculas({
-    ...req.body,
-  });
-  novaAdaptacao.save()
-    .then(() => res.status(201).send("Adaptação registrada com sucesso"))
-    .catch((error) => res.status(400).send("Erro ao registrar adaptação: " + error.message))
+
+app.post("/adaptacoes/:modeloId", async (req, res) => {
+  try {
+    const { modeloId } = req.params; // UUID do documento pai (idPelicula no frontend)
+    const { nome } = req.body;
+
+    if (typeof nome !== "string" || !nome.trim()) {
+      return res.status(400).json({ erro: "Campo 'nome' é obrigatório." });
+    }
+
+    const novoItem = { id: uuidv4(), nome: nome.trim() };
+
+    const doc = await AdaptacaoPeliculas.findOneAndUpdate(
+      { id: modeloId },                     // campo 'id' do documento pai (UUID)
+      { $push: { adaptacoes: novoItem } },  // adiciona no array
+      { new: true, runValidators: true }
+    );
+
+    if (!doc) {
+      return res.status(404).json({ erro: "Modelo não encontrado" });
+    }
+
+    return res.status(201).json(novoItem); // retorna somente o item
+  } catch (error) {
+    return res.status(500).send("Erro ao adicionar adaptação: " + error.message);
+  }
 });
 
 app.get("/adaptacoes", (req, res) => {
