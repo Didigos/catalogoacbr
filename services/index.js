@@ -292,18 +292,57 @@ app.delete("/adaptacoes/:id", (req, res) => {
     .catch((error) => res.status(500).send("Erro ao deletar adaptação: " + error.message))
 });
 
-app.put("/adaptacoes/:id", (req, res) => {
-  const adaptacaoId = req.params.id;
+// CRUD PARA AS ADAPTAÇÕES DE PELICULAS
 
-  AdaptacaoPeliculas.findByIdAndUpdate(adaptacaoId, req.body, { new: true })
-    .then((adaptacaoAtualizada) => {
-      if (!adaptacaoAtualizada) {
-        return res.status(404).send("Adaptação não encontrada")
-      }
-      res.status(200).json(adaptacaoAtualizada)
-    })
-    .catch((error) => res.status(500).send("Erro ao atualizar adaptação: " + error.message))
+app.delete("/adaptacoes/:ModeloMae/itens/:itemId", async (req, res) => {
+    
+  try {
+    const { ModeloMae, itemId } = req.params;
+    console.log('1: ', ModeloMae);
+    console.log('2: ', itemId);
+    const result = await AdaptacaoPeliculas.updateOne(
+      { id: ModeloMae },
+      { $pull: { adaptacoes: { id: itemId } } }
+    );
+    if (result.modifiedCount === 0) {
+      return res.status(404).send("Item não encontrado");
+    }
+    return res.status(204).send();
+  } catch (error) {
+    res.status(500).send("Erro ao deletar item: " + error.message);
+  }
 });
+
+app.post("/adaptacoes/:ModeloMae", async (req, res) => {
+  try {
+    const { ModeloMae } = req.params; // id (UUID) do documento pai
+    const { nome } = req.body;
+
+    if (typeof nome !== "string" || !nome.trim()) {
+      return res.status(400).json({ erro: "Campo 'nome' é obrigatório." });
+    }
+
+    const novoItem = { id: uuidv4(), nome: nome.trim() };
+
+    const doc = await AdaptacaoPeliculas.findOneAndUpdate(
+      { id: ModeloMae },
+      { $push: { adaptacoes: novoItem } },
+      { new: true, runValidators: true }
+    );
+
+    if (!doc) {
+      return res.status(404).json({ erro: "Modelo não encontrado" });
+    }
+
+    // retorna somente o item, para bater com seu frontend (adaptacaoCriada)
+    return res.status(201).json(novoItem);
+  } catch (error) {
+    return res.status(500).send("Erro ao adicionar adaptação: " + error.message);
+  }
+});
+
+
+// FIM DO CRUD DAS ADAPTAÇÕES DE PELICULAS
 
 // listar usuarios
 
