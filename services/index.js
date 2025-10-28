@@ -7,6 +7,9 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cors());
 
+import { TextoGarantia, CadastroDeServico } from './servicosSchema.js';
+import produtosGerais from './produtosGerais.js';
+
 //conexão com o banco de dados
 const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://didigos:KZDOugsZHoDWk4Fy@development.hinzp0h.mongodb.net/acbrcatalogo?retryWrites=true&w=majority&appName=Development"
 mongoose.connect(MONGO_URI)
@@ -15,10 +18,12 @@ mongoose.connect(MONGO_URI)
 
 //schemas 
 
+
 const clientes = new mongoose.Schema({
   id: {
     type: String,
     required: true,
+    default: () => uuidv4(),
     unique: true,
   },
   nome: {
@@ -258,9 +263,7 @@ const TaxaSchema = new mongoose.Schema(
 
 const Taxa = mongoose.model("Taxa", TaxaSchema);
 
-// ROTAS PARA USERS
-
-// modulo de peliculas
+// MODULO PARA PELICULAS
 
 app.post("/adaptacoes", async (req, res) => {
   try {
@@ -313,9 +316,9 @@ app.delete("/adaptacoes/:id", async (req, res) => {
 });
 
 // CRUD PARA AS ADAPTAÇÕES DE PELICULAS
- 
+
 app.delete("/adaptacoes/:ModeloMae/itens/:itemId", async (req, res) => {
-    
+
   try {
     const { ModeloMae, itemId } = req.params;
     console.log('1: ', ModeloMae);
@@ -498,6 +501,98 @@ app.put("/taxas/:id", (req, res) => {
     })
     .catch((error) => res.status(500).send("Erro ao atualizar taxa: " + error.message))
 })
+
+//CRUD PARA CLIENTES DA LOJA
+
+
+app.post("/clientes", async (req, res) => {
+  try {
+    const adicionarNovoCliente = await new Clientes(req.body)
+    await adicionarNovoCliente.save()
+    res.status(201).send("Cliente adicionado com sucesso!")
+  } catch (err) {
+    res.status(400).send("Erro ao adicionar novo cliente" + err.message)
+  }
+})
+
+app.get("/clientes", async (req, res) => {
+  try {
+    const buscarClientes = await Clientes.find();
+    res.status(201).send(buscarClientes)
+  } catch (err) {
+    res.status(401).send("Não foi possível buscar os clientes!" + err.message)
+  }
+})
+
+app.delete("/clientes/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const clienteDeletado = await Clientes.findOneAndDelete({ id: id })
+
+    if (!clienteDeletado) {
+      return res.status(404).send("Cliente não encontrado!")
+    }
+
+    res.status(200).send("Cliente Deletado com sucesso.")
+
+  } catch (err) {
+    res.status(400).send("Não foi possível deletar o cliente!" + err.message)
+  }
+})
+
+
+// ATUALIZAR CLIENTE POR ID (UUID)
+app.put("/clientes/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const clienteAtualizado = await Clientes.findOneAndUpdate(
+      { id: id }, // busca pelo campo 'id' (UUID)
+      req.body,
+      { new: true, runValidators: true } // retorna o documento atualizado e valida
+    );
+
+    if (!clienteAtualizado) {
+      return res.status(404).send("Cliente não encontrado!");
+    }
+
+    res.status(200).json("Cliente atualizado com Sucesso!");
+
+  } catch (err) {
+    res.status(500).send("Erro ao atualizar cliente: " + err.message);
+  }
+});
+//EXEMPLO PARA ADICIONAR
+// {
+//   "id": "cliente-123",
+//   "nome": "João Silva",
+//   "celular": "(11) 99999-9999",
+//   "orders": [1001, 1002]
+// }
+
+
+//CRUD PARA PRODUTOS DA LOJA
+
+app.post("/produtos", async (req, res) => {
+  try {
+    const novoProduto = new produtosGerais(req.body);
+    await novoProduto.save();
+    res.status(201).send("Produto Adicionado com Sucesso!")
+  } catch (err) {
+    console.log(err)
+    res.status(400).send("Erro ao criar novo produto!" + err.message)
+  }
+})
+
+app.get("/produtos", async (req, res) => {
+  try {
+    const Produtos = await produtosGerais.find();
+    res.status(201).json(Produtos);
+  } catch (erro) {
+    res.status(500).send("Erro ao buscar os produtos" + erro.message)
+  }
+})
+
 
 // rota raiz
 app.get("/", (req, res) => {
